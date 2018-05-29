@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -112,7 +112,7 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
                                    const std::vector<LandmarkObs> &observations, const Map &map_landmarks) {
-    // TODO: Update the weights of each particle using a mult-variate Gaussian distribution. You can read
+    // TODO: Update the weights of each particle using a multi-variate Gaussian distribution. You can read
     //   more about this distribution here: https://en.wikipedia.org/wiki/Multivariate_normal_distribution
     // NOTE: The observations are given in the VEHICLE'S coordinate system. Your particles are located
     //   according to the MAP'S coordinate system. You will need to transform between the two systems.
@@ -131,6 +131,9 @@ void ParticleFilter::resample() {
 
     // Resamples particles with replacement with probability proportional to their weight.
     std::vector<Particle> resampled_particles;
+
+    // This link was useful for this part:
+    // https://stackoverflow.com/questions/31153610/setting-up-a-discrete-distribution-in-c
 
     // Using a discrete distribution to resample particles
     std::random_device rd;
