@@ -56,6 +56,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
         p.weight = 1.0;
 
         particles.push_back(p);
+        weights.push_back(1.0);
     }
     this->is_initialized = true;
 }
@@ -146,12 +147,13 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     // these parameters are fixed throughout the loop, so they are calculated once
     double sx = std_landmark[0];
     double sy = std_landmark[1];
+    double weights_sum = 0.0;
 
-    for(auto particle: particles) {
+    for(int i=0; i<num_particles; ++i) {
         // get particle data
-        double px = particle.x;
-        double py = particle.y;
-        double heading = particle.theta;
+        double px = particles[i].x;
+        double py = particles[i].y;
+        double heading = particles[i].theta;
 
         //// for each particle: ////
 
@@ -174,10 +176,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
             int id_landmark = landmark.id_i;
 
             // filter out only landmarks within the sensor range of the current particle
-            double dx = x_landmark - px;
-            double dy = y_landmark - py;
             // if the distance to the landmark is within the circle governed by the sensor_range, it's in!
-            if ( std::pow(dx, 2) + std::pow(dy, 2) <= std::pow(sensor_range,2)) {
+            if (dist(x_landmark, px, y_landmark, py) <= sensor_range) {
                 LandmarkObs landmark_in_range{id_landmark, x_landmark, y_landmark};
                 // put all nearby landmarks in a vector
                 nearby_landmarks.push_back(landmark_in_range);
@@ -189,7 +189,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
         // check measurement probability
         // initial weight is 1
-        particle.weight = 1.0;
+        particles[i].weight = 1.0;
 
         for(auto &observation: observations_global_coords) {
             double x_obs = observation.x, y_obs = observation.y;
@@ -208,10 +208,16 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
             double dx = x_lm - x_obs;
             double dy = y_lm - y_obs;
             // set weight (importance)
-            particle.weight *= ( 1/(2*M_PI*sx*sy)) * std::exp( -(std::pow(dx, 2) / (2*std::pow(sx, 2)) +
+            particles[i].weight *= ( 1/(2*M_PI*sx*sy)) * std::exp( -(std::pow(dx, 2) / (2*std::pow(sx, 2)) +
                                                                 (std::pow(dy, 2) / (2*std::pow(sy, 2)))));
+            weights[i] = particles[i].weight;
         }
-        // TODO: normalize if needed?
+        weights_sum += particles[i].weight;
+    }
+
+    for(int i=0; i<num_particles; ++i) {
+        particles[i].weight /=weights_sum;
+        weights[i] /= weights_sum;
     }
 }
 
