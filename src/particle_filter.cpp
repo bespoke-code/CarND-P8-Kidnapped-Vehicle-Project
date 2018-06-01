@@ -24,7 +24,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     //   x, y, theta and their uncertainties from GPS) and all weights to 1.
     // Add random Gaussian noise to each particle.
     // NOTE: Consult particle_filter.h for more information about this method (and others in this file).
-    num_particles = 100; // may be changed/tuned
+    num_particles = 60; // may be changed/tuned
 
     default_random_engine gen;
     double std_x, std_y, std_theta; // Standard deviations for x, y, and theta
@@ -81,7 +81,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
     normal_distribution<double> dist_theta(0, std_theta);
 
 
-    for (auto p: particles) {
+    for (auto &p: particles) {
         //avoid division by zero
         // if yaw rate is zero
         if(std::fabs(yaw_rate) > 0.001) {
@@ -177,7 +177,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
             // filter out only landmarks within the sensor range of the current particle
             // if the distance to the landmark is within the circle governed by the sensor_range, it's in!
-            if (dist(x_landmark, px, y_landmark, py) <= sensor_range) {
+            if (dist(x_landmark,y_landmark, px, py) <= sensor_range) {
                 LandmarkObs landmark_in_range{id_landmark, x_landmark, y_landmark};
                 // put all nearby landmarks in a vector
                 nearby_landmarks.push_back(landmark_in_range);
